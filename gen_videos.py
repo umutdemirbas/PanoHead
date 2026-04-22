@@ -262,6 +262,23 @@ def parse_tuple(s: Union[str, Tuple[int,int]]) -> Tuple[int, int]:
 
 #----------------------------------------------------------------------------
 
+def resolve_output_path(network_pkl: str, output: Optional[str], pose_cond: int, seed: Optional[int] = None) -> str:
+    default_name = os.path.splitext(os.path.basename(network_pkl))[0] + '_' + str(pose_cond) + '.mp4'
+    if output is None:
+        return default_name
+
+    if output.endswith(os.sep) or not os.path.splitext(output)[1]:
+        os.makedirs(output, exist_ok=True)
+        filename = default_name if seed is None else f'{seed}.mp4'
+        return os.path.join(output, filename)
+
+    parent_dir = os.path.dirname(output)
+    if parent_dir:
+        os.makedirs(parent_dir, exist_ok=True)
+    return output
+
+#----------------------------------------------------------------------------
+
 @click.command()
 @click.option('--network', 'network_pkl', help='Network pickle filename', required=True)
 @click.option('--seeds', type=parse_range, help='List of random seeds', required=True)
@@ -347,17 +364,14 @@ def generate_images(
     if truncation_psi == 1.0:
         truncation_cutoff = 14 # no truncation so doesn't matter where we cutoff
 
-    network_pkl = os.path.basename(network_pkl)
-    
-    output = os.path.splitext(network_pkl)[0] + '_' + str(pose_cond) + '.mp4'
+    output = resolve_output_path(network_pkl, output, pose_cond)
     if interpolate:
         gen_interp_video(G=G, mp4=output, pose_cond = pose_cond, bitrate='100M', grid_dims=grid, num_keyframes=num_keyframes, w_frames=w_frames, seeds=seeds, shuffle_seed=shuffle_seed, psi=truncation_psi, truncation_cutoff=truncation_cutoff, cfg=cfg, image_mode=image_mode, gen_shapes=shapes, device=device)
     else:
-        os.makedirs(output)
         for seed in seeds:
-            output = os.path.join(output, f'{seed}.mp4')
+            seed_output = resolve_output_path(network_pkl, output, pose_cond, seed=seed)
             seeds_ = [seed]
-            gen_interp_video(G=G, mp4=output, pose_cond = pose_cond, bitrate='30M', grid_dims=grid, num_keyframes=num_keyframes, w_frames=w_frames, seeds=seeds_, shuffle_seed=shuffle_seed, psi=truncation_psi, truncation_cutoff=truncation_cutoff, cfg=cfg, image_mode=image_mode, device=device)
+            gen_interp_video(G=G, mp4=seed_output, pose_cond = pose_cond, bitrate='30M', grid_dims=grid, num_keyframes=num_keyframes, w_frames=w_frames, seeds=seeds_, shuffle_seed=shuffle_seed, psi=truncation_psi, truncation_cutoff=truncation_cutoff, cfg=cfg, image_mode=image_mode, device=device)
 
 #----------------------------------------------------------------------------
 
