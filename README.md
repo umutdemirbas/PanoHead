@@ -1,3 +1,18 @@
+# Digital Humans - Team 3
+- Sevval Uyanik - suyanik@ethz.ch
+- Trygve Eriksen - teriksen@ethz.ch
+- Umut Demirbas - udemirbas@ethz.ch
+
+## Results on Pre-Trained Models
+
+* Preparing the cluster for interactive terminal
+  - `srun -A digital_human --time=01:00:00  --mem=16G --gpus 2080ti:1 --pty bash`
+  - `conda activate panohead`
+* Running the scripts on pre-trained models
+  - Video : `python gen_videos.py --network models/easy-khair-180-gpc0.8-trans10-025000.pkl --seeds 0-3 --grid 2x2 --outdir=out --cfg Head --trunc 0.7`
+  - Image : `python gen_samples.py --outdir=out --trunc=0.7 --shapes=true --seeds=0-3 --network models/easy-khair-180-gpc0.8-trans10-025000.pkl`
+
+
 ## PanoHead: Geometry-Aware 3D Full-Head Synthesis in 360°<br>
 <a href="https://arxiv.org/abs/2303.13071"><img src="https://img.shields.io/badge/arXiv-2303.13071-b31b1b" height=22.5></a>
 <a href="https://creativecommons.org/licenses/by/4.0"><img src="https://img.shields.io/badge/LICENSE-CC--BY--4.0-yellow" height=22.5></a>
