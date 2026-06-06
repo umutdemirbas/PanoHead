@@ -236,7 +236,7 @@ dataset/expressions/
 ```
 
 **Generate Camera Matrices**:
-- Use 3DDFA_V2 (available in sibling directory) to estimate from 2D face images
+- Use 3DDFA_V2 (available in [here](https://github.com/umutdemirbas/3DDFA_V2)) to estimate from 2D face images
 - Use manual calibration if available
 - Use default front-facing camera for quick testing
 
