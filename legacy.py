@@ -22,7 +22,26 @@ from torch_utils import misc
 #----------------------------------------------------------------------------
 
 def load_network_pkl(f, force_fp16=False):
-    data = _LegacyUnpickler(f).load()
+    # Handle CUDA to CPU device mapping when CUDA is not available
+    if not torch.cuda.is_available():
+        import io
+        # Read the file content
+        if hasattr(f, 'read'):
+            content = f.read()
+            if isinstance(content, str):
+                content = content.encode()
+        else:
+            with open(f, 'rb') as file_handle:
+                content = file_handle.read()
+        
+        # Use torch.load with CPU mapping first
+        try:
+            data = torch.load(io.BytesIO(content), map_location='cpu', weights_only=False)
+        except:
+            # Fallback to legacy unpickler
+            data = _LegacyUnpickler(io.BytesIO(content)).load()
+    else:
+        data = _LegacyUnpickler(f).load()
 
     # Legacy TensorFlow pickle => convert.
     if isinstance(data, tuple) and len(data) == 3 and all(isinstance(net, _TFNetworkStub) for net in data):

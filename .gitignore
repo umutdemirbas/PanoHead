@@ -170,4 +170,8 @@ models/
 viz/
 visualizer.py
 
-testdata_real/
+# Team 3 Ignores
+fin_results*
+expression_vectors/
+interpolations/
+logs/

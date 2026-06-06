@@ -1,101 +1,496 @@
-# Digital Humans - Team 3
+# PanoHead: Geometry-Aware 3D Full-Head Synthesis in 360°
+
+**Team 3 - Digital Humans Course**
 - Sevval Uyanik - suyanik@ethz.ch
 - Trygve Eriksen - teriksen@ethz.ch
 - Umut Demirbas - udemirbas@ethz.ch
 
-## Results on Pre-Trained Models
-
-* Preparing the cluster for interactive terminal
-  - `srun -A digital_human --time=01:00:00  --mem=16G --gpus 2080ti:1 --pty bash`
-  - `conda activate panohead`
-* Running the scripts on pre-trained models
-  - Video : `python gen_videos.py --network models/easy-khair-180-gpc0.8-trans10-025000.pkl --seeds 0-3 --grid 2x2 --outdir=out --cfg Head --trunc 0.7`
-  - Image : `python gen_samples.py --outdir=out --trunc=0.7 --shapes=true --seeds=0-3 --network models/easy-khair-180-gpc0.8-trans10-025000.pkl`
-
-
-## PanoHead: Geometry-Aware 3D Full-Head Synthesis in 360°<br>
 <a href="https://arxiv.org/abs/2303.13071"><img src="https://img.shields.io/badge/arXiv-2303.13071-b31b1b" height=22.5></a>
 <a href="https://creativecommons.org/licenses/by/4.0"><img src="https://img.shields.io/badge/LICENSE-CC--BY--4.0-yellow" height=22.5></a>
-<a href="https://www.youtube.com/watch?v=Y8NXiBOEWoE"><img src="https://img.shields.io/static/v1?label=CVPR 2023&message=8 Minute Video&color=red" height=22.5></a>  
-
-
+<a href="https://www.youtube.com/watch?v=Y8NXiBOEWoE"><img src="https://img.shields.io/static/v1?label=CVPR 2023&message=8 Minute Video&color=red" height=22.5></a>
 
 ![Teaser image](./misc/teaser.png)
 
-**PanoHead: Geometry-Aware 3D Full-Head Synthesis in 360°**<br>
+**PanoHead: Geometry-Aware 3D Full-Head Synthesis in 360°**
+
 Sizhe An, Hongyi Xu, Yichun Shi, Guoxian Song, Umit Y. Ogras, Linjie Luo
-<br>https://sizhean.github.io/panohead<br>
 
-Abstract: *Synthesis and reconstruction of 3D human head has gained increasing interests in computer vision and computer graphics recently. Existing state-of-the-art 3D generative adversarial networks (GANs) for 3D human head synthesis are either limited to near-frontal views or hard to preserve 3D consistency in large view angles. We propose PanoHead, the first 3D-aware generative model that enables high-quality view-consistent image synthesis of full heads in 360° with diverse appearance and detailed geometry using only in-the-wild unstructured images for training. At its core, we lift up the representation power of recent 3D GANs and bridge the data alignment gap when training from in-the-wild images with widely distributed views. Specifically, we propose a novel two-stage self-adaptive image alignment for robust 3D GAN training. We further introduce a tri-grid neural volume representation that effectively addresses front-face and back-head feature entanglement rooted in the widely-adopted tri-plane formulation. Our method instills prior knowledge of 2D image segmentation in adversarial learning of 3D neural scene structures, enabling compositable head synthesis in diverse backgrounds. Benefiting from these designs, our method significantly outperforms previous 3D GANs, generating high-quality 3D heads with accurate geometry and diverse appearances, even with long wavy and afro hairstyles, renderable from arbitrary poses. Furthermore, we show that our system can reconstruct full 3D heads from single input images for personalized realistic 3D avatars.*
+https://sizhean.github.io/panohead
 
+### Abstract
 
-## Requirements
+*Synthesis and reconstruction of 3D human head has gained increasing interests in computer vision and computer graphics recently. Existing state-of-the-art 3D generative adversarial networks (GANs) for 3D human head synthesis are either limited to near-frontal views or hard to preserve 3D consistency in large view angles. We propose PanoHead, the first 3D-aware generative model that enables high-quality view-consistent image synthesis of full heads in 360° with diverse appearance and detailed geometry using only in-the-wild unstructured images for training.*
 
-* We recommend Linux for performance and compatibility reasons.
-* 1&ndash;8 high-end NVIDIA GPUs. We have done all testing and development using V100, RTX3090, and A100 GPUs.
-* 64-bit Python 3.8 and PyTorch 1.11.0 (or later). See https://pytorch.org for PyTorch install instructions.
-* CUDA toolkit 11.3 or later.  (Why is a separate CUDA toolkit installation required?  We use the custom CUDA extensions from the StyleGAN3 repo. Please see [Troubleshooting](https://github.com/NVlabs/stylegan3/blob/main/docs/troubleshooting.md#why-is-cuda-toolkit-installation-necessary)).
-* Python libraries: see [environment.yml](./environment.yml) for exact library dependencies.  You can use the following commands with Miniconda3 to create and activate your Python environment:
-  - `cd PanoHead`
-  - `conda env create -f environment.yml`
-  - `conda activate panohead`
+---
 
+## Table of Contents
 
-## Getting started
+1. [Requirements & Setup](#requirements--setup)
+2. [Getting Started](#getting-started)
+3. [Core Features](#core-features)
+   - [Basic Generation](#basic-generation)
+   - [Head Reconstruction (PTI)](#head-reconstruction-pti)
+   - [Head Interpolation](#head-interpolation)
+4. [Expression Editing (Team 3 Implementation)](#expression-editing-team-3-implementation)
+5. [Advanced Usage](#advanced-usage)
 
-Download the whole `models` folder from [link](https://drive.google.com/drive/folders/1m517-F1NCTGA159dePs5R5qj02svtX1_?usp=sharing) and put it under the root dir.
+---
 
-Pre-trained networks are stored as `*.pkl` files that can be referenced using local filenames.
+## Requirements & Setup
 
+### System Requirements
 
-## Generating results
+- **OS**: Linux (recommended for performance)
+- **GPU**: 1–8 high-end NVIDIA GPUs (V100, RTX3090, A100 tested)
+- **Python**: 64-bit Python 3.8+
+- **PyTorch**: 1.11.0 or later
+- **CUDA**: 11.3 or later
 
-```.bash
-# Generate videos using pre-trained model
+### Installation
 
-python gen_videos.py --network models/easy-khair-180-gpc0.8-trans10-025000.pkl \
---seeds 0-3 --grid 2x2 --outdir=out --cfg Head --trunc 0.7
+1. **Clone the repository** and navigate to the directory:
+   ```bash
+   cd PanoHead
+   ```
 
+2. **Create conda environment**:
+   ```bash
+   conda env create -f environment.yml
+   conda activate panohead
+   ```
+
+3. **Download pre-trained models**:
+   Download from [Google Drive](https://drive.google.com/drive/folders/1m517-F1NCTGA159dePs5R5qj02svtX1_?usp=sharing) and place in the `models/` directory.
+
+### Interactive Terminal Setup (Cluster)
+
+```bash
+# Request GPU resources on cluster
+srun -A digital_human --time=01:00:00 --mem=16G --gpus 2080ti:1 --pty bash
+
+# Activate environment
+conda activate panohead
 ```
 
-```.bash
-# Generate images and shapes (as .mrc files) using pre-trained model
+---
 
-python gen_samples.py --outdir=out --trunc=0.7 --shapes=true --seeds=0-3 \
-    --network models/easy-khair-180-gpc0.8-trans10-025000.pkl
+## Getting Started
+
+### Quick Start Examples
+
+**Generate videos from random seeds**:
+```bash
+python gen_videos.py \
+  --network models/easy-khair-180-gpc0.8-trans10-025000.pkl \
+  --seeds 0-3 \
+  --grid 2x2 \
+  --outdir=out \
+  --cfg Head \
+  --trunc 0.7
 ```
 
-## Applications
-```.bash
-# Generate full head reconstruction from a single RGB image.
-# Please refer to ./gen_pti_script.sh
-# For this application we need to specify dataset folder instead of zip files.
-# Segmentation files are not necessary for PTI inversion.
-
-./gen_pti_script.sh
+**Generate images and 3D shapes**:
+```bash
+python gen_samples.py \
+  --outdir=out \
+  --trunc=0.7 \
+  --shapes=true \
+  --seeds=0-3 \
+  --network models/easy-khair-180-gpc0.8-trans10-025000.pkl
 ```
 
-```.bash
-# Generate full head interpolation from two seeds.
-# Please refer to ./gen_interpolation.py for the implementation
+---
 
-python gen_interpolation.py --network models/easy-khair-180-gpc0.8-trans10-025000.pkl\
-        --trunc 0.7 --outdir interpolation_out
+## Core Features
+
+### Basic Generation
+
+Generate high-quality 3D head images from random latent codes.
+
+**Scripts**:
+- `gen_videos.py` - Generate MP4 videos of rotating heads
+- `gen_samples.py` - Generate static images and 3D shapes (.mrc files)
+
+**Key options**:
+- `--network` - Path to pre-trained model (.pkl)
+- `--seeds` - Latent code seeds (e.g., `0-3` for 4 heads)
+- `--trunc` - Truncation value for controlling diversity (0.0-1.0)
+- `--cfg` - Configuration preset (Head)
+- `--outdir` - Output directory
+
+### Head Reconstruction (PTI)
+
+Reconstruct a 3D full head from a single RGB image using Pivot Tuning Inversion (PTI).
+
+**Script**: `projector.py` or `projector_withseg.py`
+
+**Basic Usage**:
+```bash
+python projector.py \
+  --network models/easy-khair-180-gpc0.8-trans10-025000.pkl \
+  --target my_face.jpg \
+  --num-steps 500 \
+  --num-steps-pti 500 \
+  --outdir pti_output \
+  --save-video true
 ```
 
+**Output**:
+- `projected_w.npz` - Latent code (w vector) of your face
+- `projected_w.mp4` - Optimization progress video
+- `fintuned_generator.pkl` - Fine-tuned generator for your face
 
+### Head Interpolation
 
-## Using networks from Python
+Generate smooth transitions between two heads.
 
-You can use pre-trained networks in your own Python code as follows:
+**Script**: `gen_interpolation.py`
 
-```.python
-with open('*.pkl', 'rb') as f:
-    G = pickle.load(f)['G_ema'].cuda()  # torch.nn.Module
-z = torch.randn([1, G.z_dim]).cuda()    # latent codes
-c = torch.cat([cam2world_pose.reshape(-1, 16), intrinsics.reshape(-1, 9)], 1) # camera parameters
-img = G(z, c)['image']                           # NCHW, float32, dynamic range [-1, +1], no truncation
-mask = G(z, c)['image_mask']                    # NHW, int8, [0,255]
+```bash
+python gen_interpolation.py \
+  --network models/easy-khair-180-gpc0.8-trans10-025000.pkl \
+  --trunc 0.7 \
+  --outdir interpolation_out
+```
+
+---
+
+## Expression Editing (Team 3 Implementation)
+
+### Overview
+
+This extension enables discovery and manipulation of facial expressions in PanoHead's latent space. The toolkit allows you to:
+
+1. **Extract expression editing vectors** from multiple facial expressions
+2. **Apply vectors** to generate expression morphing videos
+3. **Compare expressions** visually side-by-side
+4. **Combine vectors** from multiple identities for robustness
+
+### Complete Pipeline
+
+Run the entire workflow in one command:
+
+```bash
+bash pipeline_expression_editing.sh \
+  models/easy-khair-180-gpc0.8-trans10-025000.pkl \
+  dataset/expressions \
+  pti_out_expressions \
+  expression_vectors \
+  dataset/crop_img \
+  pti_out_crop \
+  interpolations_crop_img
+```
+
+This executes all four steps automatically:
+1. PTI projection of expression images
+2. PTI projection of target identity images
+3. Vector extraction
+4. Interpolation generation
+
+### Step-by-Step Workflow
+
+#### Step 1: Prepare Expression Dataset
+
+Organize expression images with camera parameters:
+
+```
+dataset/expressions/
+├── dataset.json          # Image-to-camera mapping
+├── neutral_face.jpg
+├── smile_face.jpg
+├── anger_face.jpg
+├── surprise_face.jpg
+└── ... (other expressions)
+```
+
+**`dataset.json` Format**:
+```json
+{
+  "labels": [
+    ["neutral_face.jpg", [25_camera_matrix_values]],
+    ["smile_face.jpg", [25_camera_matrix_values]],
+    ["anger_face.jpg", [25_camera_matrix_values]],
+    ...
+  ]
+}
+```
+
+**Camera Matrix** (25 values):
+- **16 values**: 4×4 camera-to-world transformation matrix
+  ```
+  [R00, R01, R02, T0]
+  [R10, R11, R12, T1]
+  [R20, R21, R22, T2]
+  [0,   0,   0,   1 ]
+  ```
+- **9 values**: 3×3 camera intrinsics matrix
+  ```
+  [fx,  0,  cx]
+  [0,  fy,  cy]
+  [0,   0,   1 ]
+  ```
+
+**Default Front-Facing Camera** (if precise calibration unavailable):
+```json
+[1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, -1.0, 2.7, 0.0, 0.0, 0.0, 1.0, 4.2647, 0.0, 0.5, 0.0, 4.2647, 0.5, 0.0, 0.0, 1.0]
+```
+
+**Generate Camera Matrices**:
+- Use 3DDFA_V2 (available in sibling directory) to estimate from 2D face images
+- Use manual calibration if available
+- Use default front-facing camera for quick testing
+
+#### Step 2: Project Expressions to Latent Space
+
+Project each expression image using PTI optimization:
+
+```bash
+python projector_withseg.py \
+  --network models/easy-khair-180-gpc0.8-trans10-025000.pkl \
+  --target_img dataset/expressions/smile \
+  --idx 1 \
+  --num-steps 500 \
+  --num-steps-pti 500 \
+  --outdir pti_out_expressions \
+  --save-video true
+```
+
+**Output**:
+- `pti_out_expressions/[model]/[idx]/projected_w.npz` - Latent code
+- `pti_out_expressions/[model]/[idx]/PTI_render/` - Progress videos
+
+**Note**: The `--idx` parameter corresponds to the index in `dataset.json` labels array.
+
+#### Step 3: Extract Expression Vectors
+
+Compute editing vectors as differences between expressions and a base (usually neutral):
+
+```bash
+python extract_expression_vectors.py \
+  --pti-dir pti_out_expressions \
+  --base-idx 2 \
+  --outdir expression_vectors \
+  --visualize true
+```
+
+**Parameters**:
+- `--pti-dir` - Directory containing PTI embeddings
+- `--base-idx` - Index of base expression in dataset.json (e.g., 2 for neutral)
+- `--outdir` - Output directory for vectors and visualizations
+- `--visualize` - Generate analysis plots (vector magnitudes, distance matrix)
+
+**Output**:
+- `expression_vectors_[base_name].pkl` - Serialized vectors (dict format)
+- `vector_magnitudes.png` - Magnitude visualization
+- `vector_distances.png` - Distance matrix heatmap
+- `individual vectors/` - Individual .npy files per expression
+
+**Understanding the Output**:
+- Each vector represents the editing direction for an expression
+- Vectors are computed as: `expression_w - neutral_w`
+- Can be applied with different strengths to control intensity
+
+#### Step 4: Apply Expression Vectors
+
+Generate interpolation videos by gradually applying expression vectors:
+
+```bash
+python apply_expression_vectors.py \
+  --network models/easy-khair-180-gpc0.8-trans10-025000.pkl \
+  --base-w pti_out_crop/[model]/2/projected_w.npz \
+  --vectors expression_vectors/expression_vectors_neutral.pkl \
+  --expression smile \
+  --strength 1.0 \
+  --steps 50 \
+  --freeze-layers 6 \
+  --outdir videos_out \
+  --fps 30
+```
+
+**Parameters**:
+- `--base-w` - Base identity latent code (your face)
+- `--vectors` - Expression vectors pickle file
+- `--expression` - Which expression to apply
+- `--strength` - Intensity of expression (0.0-2.0, default 1.0)
+- `--steps` - Interpolation frames
+- `--freeze-layers` - Number of W+ layers to preserve (maintains identity)
+- `--fps` - Video frame rate
+
+**Output**:
+- `videos_out/[expression]_strength[X].mp4` - Interpolation video
+- `videos_out/individual_expressions/` - Frame PNGs (optional)
+
+#### Step 5: Compare Expressions
+
+Visualize all expressions applied to the same face:
+
+```bash
+python compare_expressions.py \
+  --network models/easy-khair-180-gpc0.8-trans10-025000.pkl \
+  --base-w pti_out_crop/[model]/2/projected_w.npz \
+  --vectors expression_vectors/expression_vectors_neutral.pkl \
+  --strength 1.0 \
+  --outdir comparison_out \
+  --layout grid \
+  --cols 3
+```
+
+**Parameters**:
+- `--layout` - `grid`, `horizontal`, or `vertical`
+- `--cols` - Number of columns (for grid layout)
+- `--strength` - Uniform strength for all expressions
+
+**Output**:
+- `comparison_grid_strength[X].png` - Grid layout image
+- `individual_expressions/` - Individual expression PNGs
+
+### Combining Vectors from Multiple Identities
+
+For more robust expression vectors, combine vectors extracted from multiple people:
+
+```bash
+python combine_expression_vectors.py \
+  --input-dirs pti_out_person1/expression_vectors pti_out_person2/expression_vectors \
+  --outdir robust_vectors \
+  --min-instances 2
+```
+
+**Output**:
+- `robust_expression_vectors.pkl` - Averaged vectors
+- `robust_vectors/` - Individual vector files
+- `robust_vectors_metadata.json` - Statistics and reliability scores
+
+---
+
+## Advanced Usage
+
+### Using Networks from Python
+
+```python
+import pickle
+import torch
+import numpy as np
+
+# Load model
+with open('models/easy-khair-180-gpc0.8-trans10-025000.pkl', 'rb') as f:
+    data = pickle.load(f)
+    G = data['G_ema'].cuda()
+
+# Generate from random latent code
+z = torch.randn([1, G.z_dim]).cuda()
+c = torch.cat([cam2world.reshape(-1, 16), intrinsics.reshape(-1, 9)], 1)  # camera params
+img = G(z, c)['image']  # NCHW, [-1, +1], shape [1, 3, 512, 512]
+mask = G(z, c)['image_mask']  # NHW, [0, 255], shape [1, 512, 512]
+```
+
+### Loading Projected W Vectors
+
+```python
+import numpy as np
+
+# Load PTI projection result
+data = np.load('pti_out_expressions/model/0/projected_w.npz')
+w = data['w']  # Shape: [1, num_layers, 512]
+```
+
+### Loading Expression Vectors
+
+```python
+import pickle
+
+# Load expression vectors
+with open('expression_vectors/expression_vectors_neutral.pkl', 'rb') as f:
+    vectors = pickle.load(f)
+
+# Apply to new w vector
+base_w = np.load('my_face_w.npz')['w']
+smile_vector = vectors['smile']
+edited_w = base_w + 1.0 * smile_vector
+```
+
+### Utility Scripts
+
+- `calc_mbs.py` - Calculate memory requirements for models
+- `calc_metrics.py` - Compute FID and other metrics
+- `dataset_tool.py` - Prepare datasets for training
+- `dataset_tool_seg.py` - Prepare datasets with segmentation
+- `estimate_camera_params.py` - Estimate camera matrices from images
+- `resave_model.py` - Convert model formats
+
+---
+
+## Implementation Details
+
+### Key Files for Expression Editing
+
+| Script | Purpose |
+|--------|---------|
+| `extract_expression_vectors.py` | Extract editing vectors from PTI embeddings |
+| `apply_expression_vectors.py` | Apply vectors to generate interpolation videos |
+| `compare_expressions.py` | Visualize expressions in grid/horizontal/vertical layouts |
+| `combine_expression_vectors.py` | Combine vectors from multiple identities |
+| `pipeline_expression_editing.sh` | Complete automated workflow |
+| `projector_withseg.py` | Modified projector for expression datasets |
+
+### Modifications from Original PanoHead
+
+1. **projector_withseg.py** - Enhanced version of `projector.py` that:
+   - Works with expression image folders
+   - Loads camera parameters from `dataset.json`
+   - Supports per-image PTI optimization with segmentation
+
+2. **pipeline_expression_editing.sh** - Automated workflow that:
+   - Runs PTI on expression set
+   - Extracts vectors
+   - Applies vectors to target identity
+   - Generates interpolation videos
+
+3. **Camera Parameter Handling**:
+   - Automatic loading from `dataset.json`
+   - Support for default front-facing camera
+   - Integration with 3DDFA_V2 for estimation
+
+---
+
+## Troubleshooting
+
+### Camera Matrix Issues
+
+**Error**: `camera matrix: torch.Size([1, 0])` - Empty camera matrix
+- **Solution**: Ensure `dataset.json` is in the correct location and has proper format
+
+**Error**: Camera not found for image
+- **Solution**: Check that image filenames in `dataset.json` match actual files (case-sensitive)
+
+### Memory Issues
+
+**Error**: Out of GPU memory
+- **Solution**: Reduce batch size or use smaller model
+- Check `calc_mbs.py` for memory requirements
+
+### PTI Optimization Issues
+
+**Error**: Poor projection quality
+- **Solution**: Increase `--num-steps` and `--num-steps-pti`
+- Ensure input image is well-lit and frontal
+- Check camera parameters are reasonable
+
+---
+
+## References
+
+**Original PanoHead Paper**: https://arxiv.org/abs/2303.13071
+
+**Project Page**: https://sizhean.github.io/panohead
+
+**Citation**:
+```bibtex
+@inproceedings{an2023panohead,
+  title={PanoHead: Geometry-Aware 3D Full-Head Synthesis in 360°},
+  author={An, Sizhe and Xu, Hongyi and Shi, Yichun and Song, Guoxian and Ogras, Umit Y and Luo, Linjie},
+  booktitle={CVPR},
+  year={2023}
+}
 ```
 
 The above code requires `torch_utils` and `dnnlib` to be accessible via `PYTHONPATH`. It does not need source code for the networks themselves &mdash; their class definitions are loaded from the pickle via `torch_utils.persistence`.

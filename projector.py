@@ -291,15 +291,16 @@ def run_projection(
         verbose=True
     )
     print (f'Elapsed: {(perf_counter()-start_time):.1f} s')
-    G_steps = project_pti(
-        G,
-        target=torch.tensor(target_uint8.transpose([2, 0, 1]), device=device), # pylint: disable=not-callable
-        w_pivot=projected_w_steps[-1:],
-        c=c,
-        num_steps=num_steps_pti,
-        device=device,
-        verbose=True
-    )
+    # G_steps = project_pti(
+    #     G,
+    #     target=torch.tensor(target_uint8.transpose([2, 0, 1]), device=device), # pylint: disable=not-callable
+    #     w_pivot=projected_w_steps[-1:],
+    #     c=c,
+    #     num_steps=num_steps_pti,
+    #     device=device,
+    #     verbose=True
+    # )
+    G_final = G
     print (f'Elapsed: {(perf_counter()-start_time):.1f} s')
 
     # Render debug output: optional video and projected image and W vector.
@@ -312,19 +313,19 @@ def run_projection(
             synth_image = (synth_image + 1) * (255/2)
             synth_image = synth_image.permute(0, 2, 3, 1).clamp(0, 255).to(torch.uint8)[0].cpu().numpy()
             video.append_data(np.concatenate([target_uint8, synth_image], axis=1))
-        for G_new in G_steps:
-            G_new.to(device)
-            synth_image = G_new.synthesis(projected_w_steps[-1].unsqueeze(0).to(device), c=c, noise_mode='const')['image']
-            synth_image = (synth_image + 1) * (255/2)
-            synth_image = synth_image.permute(0, 2, 3, 1).clamp(0, 255).to(torch.uint8)[0].cpu().numpy()
-            video.append_data(np.concatenate([target_uint8, synth_image], axis=1))
-            G_new.cpu()
+        # for G_new in G_steps:
+        #     G_new.to(device)
+        #     synth_image = G_new.synthesis(projected_w_steps[-1].unsqueeze(0).to(device), c=c, noise_mode='const')['image']
+        #     synth_image = (synth_image + 1) * (255/2)
+        #     synth_image = synth_image.permute(0, 2, 3, 1).clamp(0, 255).to(torch.uint8)[0].cpu().numpy()
+        #     video.append_data(np.concatenate([target_uint8, synth_image], axis=1))
+        #     G_new.cpu()
         video.close()
 
     # Save final projected frame and W vector.
     target_pil.save(f'{outdir}/target.png')
     projected_w = projected_w_steps[-1]
-    G_final = G_steps[-1].to(device)
+    G_final = G_final.to(device)# G_steps[-1].to(device)
     synth_image = G_final.synthesis(projected_w.unsqueeze(0).to(device), c=c, noise_mode='const')['image']
     synth_image = (synth_image + 1) * (255/2)
     synth_image = synth_image.permute(0, 2, 3, 1).clamp(0, 255).to(torch.uint8)[0].cpu().numpy()
