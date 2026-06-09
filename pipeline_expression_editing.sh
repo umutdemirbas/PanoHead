@@ -38,13 +38,13 @@ NETWORK="${1:-models/easy-khair-180-gpc0.8-trans10-025000.pkl}"
 EXPRESSION_DIR="${2:-dataset/expressions}"  # Should contain dataset.json with labels
 OUTPUT_DIR="${3:-fin_resultsv5/pti_out_expressions}"
 VECTORS_DIR="${4:-fin_resultsv5/expression_vectors}"
-TARGET_DIR="${5:-dataset/crop_img2}"
+TARGET_DIR="${5:-dataset/final_dataset/}"
 TARGET_OUTPUT_DIR="${6:-fin_resultsv5/pti_out_crop}"
 INTERP_OUTPUT_DIR="${7:-fin_resultsv5/interpolations_crop_img}"
 
 NUM_STEPS_W=500              # Initial w optimization steps
 NUM_STEPS_PTI=500            # PTI fine-tuning steps
-STRENGTH=1.2                 # Maximum strength for interpolation
+STRENGTH=1.0                 # Maximum strength for interpolation
 INTERP_STEPS=50              # Number of interpolation frames
 
 # Create logs directory
@@ -253,6 +253,7 @@ PY
                     --strength="$STRENGTH" \
                     --steps="$INTERP_STEPS" \
                     --outdir="$INTERP_OUTPUT_DIR/$target_name/$expr" \
+                    --freeze-layers=4 \
                     --fps=30 \
                     --save-frames=false || echo "  Warning: Failed target=$target_name expression=$expr"
             done

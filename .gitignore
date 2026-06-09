@@ -172,6 +172,7 @@ visualizer.py
 
 # Team 3 Ignores
 fin_results*
+fin_out/
 expression_vectors/
 interpolations/
 logs/
